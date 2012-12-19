@@ -8,6 +8,8 @@ import urllib
 import json
 import ConfigParser
 import select
+import sys
+import threading
 
 config = ConfigParser.RawConfigParser()
 
@@ -60,6 +62,7 @@ def login():
 
 
 class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+    SocketServer.ThreadingMixIn.daemon_threads = True
     allow_reuse_address=True
     pass
 
@@ -122,5 +125,13 @@ HOST, PORT = "localhost", int(config.get('720Proxy', 'socksPort'))
 # Create the server, binding to localhost on port 9999
 server = SocketServer.ThreadingTCPServer((HOST, PORT), ProxyTCPHandler)
 print "SOCKS V5 proxy started on %s port %d" % (HOST,PORT)
-server.serve_forever()
-server.server_close()
+
+server_thread = threading.Thread(target=server.serve_forever)
+server_thread.daemon = True
+server_thread.start()
+try:
+    server_thread.join(sys.maxint)
+except KeyboardInterrupt: 
+    pass
+server.shutdown()
+print "Proxy shutdown!"
