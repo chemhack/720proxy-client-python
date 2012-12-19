@@ -64,14 +64,15 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
 
 
+
 class ProxyTCPHandler(SocketServer.StreamRequestHandler):
-    encrypt_table = string.maketrans('', '')[::-1]
+    ENCRYPT_TABLE = string.maketrans('', '')[::-1]
 
     def decode(self, data):
-        return data.translate(self.encrypt_table)
+        return str(data).translate(self.ENCRYPT_TABLE)
 
     def encode(self, data):
-        return data.translate(self.encrypt_table)
+        return str(data).translate(self.ENCRYPT_TABLE)
 
     def handle_tcp(self, sock, remote):
         try:
